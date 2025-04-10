@@ -17,6 +17,9 @@ const identifierType = ref<boolean>(true);
 // Form ref for validation
 const formRef = ref();
 
+// Loading state
+const isLoading = ref(false);
+
 // Location list items
 const locationItems = [
   "Асеновград",
@@ -74,16 +77,26 @@ const validateForm = () => {
 };
 
 // Handle form submission
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (validateForm()) {
+    // Start loading
+    isLoading.value = true;
+
+    // Simulate a 1-second delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     console.log("Form submitted:", {
       ...form,
       identifierType: identifierType.value ? "PID" : "HPH",
     });
+
+    // Stop loading
+    isLoading.value = false;
   } else {
     console.log("Form validation failed.");
   }
 };
+
 //
 // Computed
 //
@@ -138,6 +151,20 @@ useHead({
     height="100%"
     class="w-100 mx-auto d-flex flex-column ga-4 px-4 py-8"
   >
+    <!-- Loading Overlay -->
+    <v-overlay
+      :model-value="isLoading"
+      z-index="50"
+      color="rgba(0, 0, 0, 0.5)"
+      class="align-center justify-center"
+    >
+      <v-progress-circular
+        indeterminate
+        color="white"
+        size="50"
+      ></v-progress-circular>
+    </v-overlay>
+
     <!-- Actions -->
     <div
       class="d-flex flex-wrap flex-md-row flex-column-reverse align-start align-md-center justify-space-between ga-4"
