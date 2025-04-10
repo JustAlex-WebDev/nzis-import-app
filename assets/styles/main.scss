@@ -1,0 +1,17 @@
+@import "@mdi/font/css/materialdesignicons.min.css";
+
+// Global Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+}
+
+body,
+.v-app {
+  overflow: hidden;
+}

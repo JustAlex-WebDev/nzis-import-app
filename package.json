@@ -1,0 +1,27 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "export NODE_OPTIONS=--max-old-space-size=16384 && nuxt build",
+    "dev": "export NODE_OPTIONS=--max-old-space-size=4096 && nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@mdi/font": "^7.4.47",
+    "@nuxtjs/vercel-builder": "^0.25.0",
+    "nuxt": "^3.15.4",
+    "sass": "^1.85.0",
+    "sass-loader": "^16.0.5",
+    "vuetify": "^3.7.12"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-musl": "4.9.5"
+  }
+}
