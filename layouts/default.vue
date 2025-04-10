@@ -36,7 +36,9 @@
         <v-icon icon="mdi-information-outline" size="small"></v-icon>
 
         <!-- Text -->
-        <span class="text-body-2 font-weight-bold">Използва се Рила сървър</span>
+        <span class="text-body-2 font-weight-bold"
+          >Използва се Рила сървър</span
+        >
       </div>
     </v-footer>
   </v-app>
