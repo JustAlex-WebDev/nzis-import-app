@@ -14,6 +14,9 @@ const form = reactive({
 // Identifier Type Switch (true for PID, false for HPH)
 const identifierType = ref<boolean>(true);
 
+// Form ref for validation
+const formRef = ref();
+
 // Location list items
 const locationItems = [
   "Асеновград",
@@ -53,6 +56,34 @@ const hphValidationRule = (v: string) => {
   return true;
 };
 
+//
+// Methods
+//
+
+// Validate form fields
+const validateForm = () => {
+  const pidValid = identifierType.value
+    ? pidValidationRule(form.pid?.toString() || "") === true
+    : hphValidationRule(form.hph?.toString() || "") === true;
+
+  if (!pidValid) {
+    console.error("Invalid PID/HPH");
+  }
+
+  return pidValid;
+};
+
+// Handle form submission
+const handleSubmit = () => {
+  if (validateForm()) {
+    console.log("Form submitted:", {
+      ...form,
+      identifierType: identifierType.value ? "PID" : "HPH",
+    });
+  } else {
+    console.log("Form validation failed.");
+  }
+};
 //
 // Computed
 //
@@ -109,7 +140,7 @@ useHead({
   >
     <!-- Actions -->
     <div
-      class="d-flex flex-wrap flex-md-row flex-column-reverse align-center justify-space-between ga-4"
+      class="d-flex flex-wrap flex-md-row flex-column-reverse align-start align-md-center justify-space-between ga-4"
     >
       <!-- PID/HPH Switch -->
       <div class="d-flex align-center ga-4">
@@ -175,7 +206,7 @@ useHead({
     </div>
 
     <!-- Form -->
-    <form>
+    <v-form ref="formRef" @submit.prevent="handleSubmit">
       <v-row class="d-flex flex-wrap" align="stretch" justify="space-between">
         <!-- PID/HPH Inputs -->
         <v-col cols="12">
@@ -184,7 +215,6 @@ useHead({
             v-if="identifierType"
             v-model="form.pid"
             :value="form.pid"
-            append-inner-icon="mdi-magnify"
             label="ЕГН/ЛЧН"
             control-variant="hidden"
             maxlength="10"
@@ -196,7 +226,25 @@ useHead({
             persistent-hint
             :rules="[pidValidationRule]"
             :counter="counter"
+            @keydown.enter="handleSubmit"
           >
+            <!-- Search Action -->
+            <template v-slot:append-inner>
+              <v-tooltip>
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                    class="cursor-pointer"
+                    v-bind="props"
+                    @click="handleSubmit"
+                  >
+                    mdi-magnify
+                  </v-icon>
+                </template>
+
+                <!-- Tooltip -->
+                <span>Търсене</span>
+              </v-tooltip>
+            </template>
           </v-number-input>
 
           <!-- HPH Input -->
@@ -204,7 +252,6 @@ useHead({
             v-else
             v-model="form.hph"
             :value="form.hph"
-            append-inner-icon="mdi-magnify"
             label="HPH"
             type="text"
             maxlength="12"
@@ -216,7 +263,26 @@ useHead({
             persistent-hint
             :rules="[hphValidationRule]"
             :counter="counter"
-          />
+            @keydown.enter="handleSubmit"
+          >
+            <!-- Search Action -->
+            <template v-slot:append-inner>
+              <v-tooltip>
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                    class="cursor-pointer"
+                    v-bind="props"
+                    @click="handleSubmit"
+                  >
+                    mdi-magnify
+                  </v-icon>
+                </template>
+
+                <!-- Tooltip -->
+                <span>Търсене</span>
+              </v-tooltip>
+            </template>
+          </v-text-field>
         </v-col>
 
         <!-- Sale Schema Select -->
@@ -259,6 +325,6 @@ useHead({
           </v-select>
         </v-col>
       </v-row>
-    </form>
+    </v-form>
   </v-container>
 </template>

@@ -11,6 +11,7 @@ import * as directives from "vuetify/directives";
 export default defineNuxtPlugin((nuxtApp) => {
   // Initialize Vuetify
   const vuetify = createVuetify({
+    ssr: true,
     components: {
       ...components,
     },

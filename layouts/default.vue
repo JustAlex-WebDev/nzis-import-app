@@ -10,7 +10,7 @@
           <v-icon icon="mdi-cloud-arrow-right-outline" size="large"></v-icon>
 
           <!-- Text -->
-          <span class="text-h6 font-weight-bold">Импорт от НЗИК</span>
+          <span class="text-h6 font-weight-bold">Импорт от НЗИС</span>
         </div>
 
         <div class="opacity-50">
