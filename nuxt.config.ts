@@ -40,5 +40,6 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true,
     debug: false,
+    preset: "cloudflare-pages",
   },
 });

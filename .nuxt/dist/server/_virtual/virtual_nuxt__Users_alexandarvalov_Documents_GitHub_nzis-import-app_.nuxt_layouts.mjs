@@ -1,0 +1,1 @@
+import{defineAsyncComponent as e}from"/Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/vue/index.mjs";const t={default:e((()=>import("../layouts/default.vue.mjs").then((e=>e.default||e))))};export{t as default};

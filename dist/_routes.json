@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/_nuxt/*",
+    "/favicon.ico",
+    "/icon.png",
+    "/images/branding-nzis.svg",
+    "/images/branding-nzis.svg.br",
+    "/images/branding-nzis.svg.gz"
+  ]
+}

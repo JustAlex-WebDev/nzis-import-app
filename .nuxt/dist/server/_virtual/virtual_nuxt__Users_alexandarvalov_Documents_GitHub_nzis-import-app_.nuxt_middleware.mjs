@@ -1,0 +1,1 @@
+import e from"../node_modules/nuxt/dist/pages/runtime/validate.mjs";import t from"../node_modules/nuxt/dist/app/middleware/manifest-route-rule.mjs";const m=[e,t],o={};export{m as globalMiddleware,o as namedMiddleware};

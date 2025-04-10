@@ -1,0 +1,1 @@
+import e from"./index.vue2.mjs";import{useSSRContext as o}from"/Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/vue/index.mjs";const s=e.setup;e.setup=(e,t)=>{const d=o();return(d.modules||(d.modules=new Set)).add("pages/index.vue"),s?s(e,t):void 0};export{e as default};

@@ -1,0 +1,1 @@
+import{_ as n,v as t}from"./server.mjs";import{O as r,P as e}from"../routes/renderer.mjs";function i(o,s={}){const u=function(r){var o;const s=r||n();return(null==(o=null==s?void 0:s.ssrContext)?void 0:o.head)||(null==s?void 0:s.runWithContext((()=>{if(t.hasInjectionContext())return t.inject(e)})))}(s.nuxt);if(u)return r(o,{head:u,...s})}export{i};
