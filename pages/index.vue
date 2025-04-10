@@ -6,23 +6,49 @@
 // Form state
 const form = reactive({
   pid: null as number | null,
+  hph: null as string | null,
+  location: null as string | null,
+  saleSchema: null as string | null,
 });
 
-// Switch
-const switchMe = ref(false);
+// Identifier Type Switch (true for PID, false for HPH)
+const identifierType = ref<boolean>(true);
+
+// Location list items
+const locationItems = [
+  "Асеновград",
+  "Търново",
+  "София",
+  "Пловдив",
+  "Плевен",
+  "Хасково",
+];
+
+// Sale schema list items
+const saleSchemaItems = ["НЗОК - Асеновград", "НЗОК - Пловдив", "НЗОК - София"];
 
 //
 // Methods
 //
 
-// Validation rule: PID should be exactly 10 digits
+// Validation rule for PID
 const pidValidationRule = (v: string) => {
-  // Check if the input contains exactly 10 digits
   const regex = /^\d{10}$/;
   if (!v) {
     return "ЕГН/ЛНЧ не може да бъде празно";
   } else if (!regex.test(v)) {
     return "ЕГН/ЛНЧ трябва да съдържа точно 10 цифри";
+  }
+  return true;
+};
+
+// Validation rule for HPH
+const hphValidationRule = (v: string) => {
+  const regex = /^[0-9А-Яа-я]{12}$/; // Ensure exactly 12 characters: numbers or Cyrillic letters
+  if (!v) {
+    return "HPH не може да бъде празно";
+  } else if (!regex.test(v)) {
+    return "HPH трябва да съдържа точно 12 символа (цифри и/или букви на кирилица)";
   }
   return true;
 };
@@ -33,8 +59,19 @@ const pidValidationRule = (v: string) => {
 
 // Computed property for the counter
 const counter = computed(() => {
-  const length = form.pid ? form.pid.toString().length : 0; // Convert to string and get length
-  return length; // Just return the number for the counter
+  // Convert to string and get length
+  const length = form.pid ? form.pid.toString().length : 0;
+  return length;
+});
+
+//
+// On component mount
+//
+
+// Set default location to the first item in the list when the component is mounted
+onMounted(() => {
+  form.location = form.location || locationItems[0];
+  form.saleSchema = form.saleSchema || saleSchemaItems[0];
 });
 
 //
@@ -68,62 +105,83 @@ useHead({
   <v-container
     max-width="1024"
     height="100%"
-    class="mx-auto d-flex flex-column w-100 ga-8 px-4 py-4"
+    class="w-100 mx-auto d-flex flex-column ga-4 px-4 py-8"
   >
     <!-- Actions -->
-    <div class="d-flex align-center ga-4">
-      <!-- Import -->
-      <v-btn
-        color="primary"
-        rounded="lg"
-        variant="outlined"
-        prepend-icon="mdi-file-import-outline"
-        class="d-flex"
-        v-tooltip:bottom="{
-          text: 'Импортиране на маркираните направления',
-          openDelay: 700,
-        }"
-      >
-        <span class="text-body-2">Импорт</span>
-      </v-btn>
+    <div
+      class="d-flex flex-wrap flex-md-row flex-column-reverse align-center justify-space-between ga-4"
+    >
+      <!-- PID/HPH Switch -->
+      <div class="d-flex align-center ga-4">
+        <span>Търсете направления по</span>
+        <v-switch
+          v-model="identifierType"
+          :hide-details="true"
+          color="primary"
+          :label="identifierType ? 'ЕГН/ЛЧН' : 'HPH'"
+        >
+          <template v-slot:label>
+            {{ identifierType ? "ЕГН/ЛЧН" : "HPH" }}
+          </template>
+        </v-switch>
+      </div>
 
-      <!-- Print -->
-      <v-btn
-        color=""
-        rounded="lg"
-        variant="outlined"
-        prepend-icon="mdi-printer-outline"
-        class="d-flex"
-        v-tooltip:bottom="{
-          text: 'Печатане на маркираните направления',
-          openDelay: 700,
-        }"
-      >
-        <span class="text-body-2">Печат</span>
-      </v-btn>
+      <div class="d-flex align-center ga-4">
+        <!-- Import -->
+        <v-btn
+          color="primary"
+          rounded="lg"
+          variant="outlined"
+          prepend-icon="mdi-file-import-outline"
+          class="d-flex"
+          v-tooltip:bottom="{
+            text: 'Импортиране на маркираните направления',
+            openDelay: 700,
+          }"
+        >
+          <span class="text-body-2">Импорт</span>
+        </v-btn>
 
-      <!-- Clear All -->
-      <v-btn
-        color="error"
-        rounded="lg"
-        variant="outlined"
-        prepend-icon="mdi-close"
-        class="d-flex"
-        v-tooltip:bottom="{
-          text: 'Изчистисване на всички направления',
-          openDelay: 700,
-        }"
-      >
-        <span class="text-body-2">Изчисти</span>
-      </v-btn>
+        <!-- Print -->
+        <v-btn
+          color=""
+          rounded="lg"
+          variant="outlined"
+          prepend-icon="mdi-printer-outline"
+          class="d-flex"
+          v-tooltip:bottom="{
+            text: 'Печатане на маркираните направления',
+            openDelay: 700,
+          }"
+        >
+          <span class="text-body-2">Печат</span>
+        </v-btn>
+
+        <!-- Clear All -->
+        <v-btn
+          color="error"
+          rounded="lg"
+          variant="outlined"
+          prepend-icon="mdi-close"
+          class="d-flex"
+          v-tooltip:bottom="{
+            text: 'Изчистисване на всички направления',
+            openDelay: 700,
+          }"
+        >
+          <span class="text-body-2">Изчисти</span>
+        </v-btn>
+      </div>
     </div>
 
     <!-- Form -->
     <form>
       <v-row class="d-flex flex-wrap" align="stretch" justify="space-between">
-        <!-- PID Input -->
+        <!-- PID/HPH Inputs -->
         <v-col cols="12">
+          <!-- PID Input -->
           <v-number-input
+            v-if="identifierType"
             v-model="form.pid"
             :value="form.pid"
             append-inner-icon="mdi-magnify"
@@ -139,17 +197,66 @@ useHead({
             :rules="[pidValidationRule]"
             :counter="counter"
           >
-            <!-- PID/HPH Switch -->
-            <template v-slot:prepend>
-              <v-switch
-                v-model="switchMe"
-                :hide-details="true"
-                style="height: 48px; max-height: 48px"
-              >
-                <template v-slot:label>ЕГН/ЛЧН</template>
-              </v-switch>
-            </template></v-number-input
+          </v-number-input>
+
+          <!-- HPH Input -->
+          <v-text-field
+            v-else
+            v-model="form.hph"
+            :value="form.hph"
+            append-inner-icon="mdi-magnify"
+            label="HPH"
+            type="text"
+            maxlength="12"
+            variant="outlined"
+            placeholder="5АГ30326ПВ98"
+            density="comfortable"
+            rounded="lg"
+            hint="Въведете валиден HPH"
+            persistent-hint
+            :rules="[hphValidationRule]"
+            :counter="counter"
+          />
+        </v-col>
+
+        <!-- Sale Schema Select -->
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="form.saleSchema"
+            :value="form.saleSchema"
+            :items="saleSchemaItems"
+            prepend-inner-icon="mdi-currency-eur"
+            label="Изберете схема на продажба"
+            control-variant="hidden"
+            maxlength="10"
+            variant="outlined"
+            placeholder="Схема на продажба"
+            density="comfortable"
+            rounded="lg"
+            hint="Изберете схема на продажба от списъка."
+            persistent-hint
           >
+          </v-select>
+        </v-col>
+
+        <!-- Location Select -->
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="form.location"
+            :value="form.location"
+            :items="locationItems"
+            prepend-inner-icon="mdi-map-marker-outline"
+            label="Изберете местоположение"
+            control-variant="hidden"
+            maxlength="10"
+            variant="outlined"
+            placeholder="Местоположение"
+            density="comfortable"
+            rounded="lg"
+            hint="Изберете местоположение от списъка."
+            persistent-hint
+          >
+          </v-select>
         </v-col>
       </v-row>
     </form>
