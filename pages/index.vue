@@ -1356,3 +1356,9 @@ useHead({
     </v-row>
   </v-container>
 </template>
+
+<style>
+.v-menu > .v-overlay__content > .v-list {
+  background: white !important;
+}
+</style>

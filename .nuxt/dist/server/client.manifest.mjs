@@ -4,7 +4,7 @@ export default {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "CtDBito9.js",
+    "file": "G794TuUy.js",
     "name": "default",
     "src": "layouts/default.vue",
     "isDynamicEntry": true,
@@ -48,7 +48,7 @@ export default {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "alQAS7UU.js",
+    "file": "BiWxcAK0.js",
     "name": "entry",
     "src": "node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -97,12 +97,19 @@ export default {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "CvpYKvOT.js",
+    "file": "BRjNLyGc.js",
     "name": "index",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
     "imports": [
       "node_modules/nuxt/dist/app/entry.js"
-    ]
+    ],
+    "css": []
+  },
+  "index.BwnkG61b.css": {
+    "file": "index.BwnkG61b.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
   }
 }
