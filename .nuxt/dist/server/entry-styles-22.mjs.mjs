@@ -1,1 +1,1 @@
-const o=".v-selection-control-group{display:flex;flex-direction:column;grid-area:control}.v-selection-control-group--inline{flex-direction:row;flex-wrap:wrap}";export{o as default};
+const a=".v-counter{color:rgba(var(--v-theme-on-surface),var(--v-medium-emphasis-opacity));flex:0 1 auto;font-size:12px;transition-duration:.15s}";export{a as default};

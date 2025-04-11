@@ -1,6 +1,7 @@
 import { defineNuxtPlugin } from "#app";
 import { createVuetify } from "vuetify";
 import { md3 } from "vuetify/blueprints";
+import { VDateInput } from "vuetify/labs/VDateInput";
 import "vuetify/styles";
 import "@mdi/font/css/materialdesignicons.css";
 
@@ -14,11 +15,15 @@ export default defineNuxtPlugin((nuxtApp) => {
     ssr: true,
     components: {
       ...components,
+      VDateInput,
     },
     directives,
     blueprint: md3,
     icons: {
       defaultSet: "mdi",
+    },
+    locale: {
+      locale: "bg",
     },
   });
 

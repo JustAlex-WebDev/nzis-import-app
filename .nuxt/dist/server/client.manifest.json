@@ -4,7 +4,7 @@
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "B8lINpXi.js",
+    "file": "CtDBito9.js",
     "name": "default",
     "src": "layouts/default.vue",
     "isDynamicEntry": true,
@@ -48,7 +48,7 @@
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "Umoiyatd.js",
+    "file": "alQAS7UU.js",
     "name": "entry",
     "src": "node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -56,7 +56,7 @@
       "layouts/default.vue"
     ],
     "css": [
-      "entry.DbQVsI_s.css"
+      "entry.BVAZhOEw.css"
     ],
     "assets": [
       "materialdesignicons-webfont.CSr8KVlo.eot",
@@ -66,8 +66,8 @@
     ],
     "_globalCSS": true
   },
-  "entry.DbQVsI_s.css": {
-    "file": "entry.DbQVsI_s.css",
+  "entry.BVAZhOEw.css": {
+    "file": "entry.BVAZhOEw.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true
@@ -97,7 +97,7 @@
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "B5kF9Dj1.js",
+    "file": "CvpYKvOT.js",
     "name": "index",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
