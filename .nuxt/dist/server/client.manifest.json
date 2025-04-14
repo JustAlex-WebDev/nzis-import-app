@@ -4,7 +4,7 @@
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "G794TuUy.js",
+    "file": "xyl3uNup.js",
     "name": "default",
     "src": "layouts/default.vue",
     "isDynamicEntry": true,
@@ -48,7 +48,7 @@
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "BiWxcAK0.js",
+    "file": "VRMhhbkJ.js",
     "name": "entry",
     "src": "node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -97,7 +97,7 @@
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "BRjNLyGc.js",
+    "file": "CaM3AABK.js",
     "name": "index",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
@@ -106,8 +106,8 @@
     ],
     "css": []
   },
-  "index.BwnkG61b.css": {
-    "file": "index.BwnkG61b.css",
+  "index.Bn_LA-c8.css": {
+    "file": "index.Bn_LA-c8.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true

@@ -28,6 +28,9 @@ const formRef = ref();
 // Loading state
 const isLoading = ref(false);
 
+// Selected references for import
+const selectedReferences = ref<Array<string | number>>([]);
+
 // Location list items
 const locationItems = [
   "Асеновград",
@@ -40,10 +43,6 @@ const locationItems = [
 
 // Sale schema list items
 const saleSchemaItems = ["НЗОК - Асеновград", "НЗОК - Пловдив", "НЗОК - София"];
-
-// Copy to clipboard
-const textToCopy = ref<string | number>("");
-const showSmallTooltip = ref(false);
 
 // Examination Table
 const examinationTableItems = [
@@ -67,6 +66,15 @@ const performerSelectItems = [
   { name: "Д-р Николов", department: "Офталмология" },
   { name: "Д-р Димитрова", department: "Хирургия" },
 ];
+
+//
+// Computed Properties
+//
+
+// Check if any references are selected
+const hasSelectedReferences = computed(
+  () => selectedReferences.value.length > 0
+);
 
 //
 // Methods
@@ -93,10 +101,6 @@ const hphValidationRule = (v: string) => {
   }
   return true;
 };
-
-//
-// Methods
-//
 
 // Validate form fields
 const validateForm = () => {
@@ -133,44 +137,38 @@ const handleSubmit = async () => {
 };
 
 /**
- * Handles copying the text from the `hph-text` div to the clipboard.
+ * Copies the provided text to the clipboard.
+ * @param {string} textToCopy - The text to copy to the clipboard.
  */
-const copyToClipboard = () => {
-  const textElement = document.getElementById("copy-text");
-
-  if (textElement) {
-    const textToCopy = textElement.textContent?.trim() || "";
-
-    if (!navigator.clipboard?.writeText) {
-      console.error("Clipboard API is not supported in this browser.");
-      alert("Клипбордът не е поддържан в този браузър.");
-      return;
-    }
-
-    navigator.clipboard
-      .writeText(textToCopy)
-      .then(() => {
-        // Show the tooltip after successful copy
-        showSmallTooltip.value = true;
-
-        // Hide tooltip after 1 second
-        setTimeout(() => {
-          showSmallTooltip.value = false;
-        }, 1000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy text to clipboard:", err);
-        alert("Неуспешно копиране. Опитайте отново.");
-      });
-  } else {
-    console.error("Text element not found.");
+const copyToClipboard = (textToCopy: string) => {
+  if (!textToCopy) {
+    console.error("No text provided to copy.");
+    alert("Няма текст за копиране.");
+    return;
   }
+
+  if (!navigator.clipboard?.writeText) {
+    console.error("Clipboard API is not supported in this browser.");
+    alert("Клипбордът не е поддържан в този браузър.");
+    return;
+  }
+
+  navigator.clipboard
+    .writeText(textToCopy)
+    .then(() => {
+      alert("Текстът е успешно копиран в клипборда!");
+    })
+    .catch((err) => {
+      console.error("Failed to copy text to clipboard:", err);
+      alert("Неуспешно копиране. Опитайте отново.");
+    });
 };
 
+// Props for the performer select
 const performerSelectProps = (performer: {
   name: string;
   department: string;
-}) => {
+}): { title: string; subtitle: string } => {
   return {
     title: performer.name,
     subtitle: performer.department,
@@ -267,6 +265,7 @@ useHead({
       <div class="d-flex align-center ga-4">
         <!-- Import -->
         <v-btn
+          :disabled="!hasSelectedReferences"
           color="primary"
           rounded="lg"
           variant="outlined"
@@ -282,6 +281,7 @@ useHead({
 
         <!-- Print -->
         <v-btn
+          :disabled="!hasSelectedReferences"
           color=""
           rounded="lg"
           variant="outlined"
@@ -366,7 +366,7 @@ useHead({
             placeholder="5АГ30326ПВ98"
             density="comfortable"
             rounded="lg"
-            hint="Въведете валиден HPH"
+            hint="Въведете валиден HPH (цифри и/или букви на кирилица)"
             persistent-hint
             :rules="[hphValidationRule]"
             :counter="counter"
@@ -448,6 +448,8 @@ useHead({
           >
             <!-- Import Checkbox -->
             <v-checkbox
+              :value="1"
+              v-model="selectedReferences"
               :hide-details="true"
               style="scale: 0.8"
               color="primary"
@@ -461,7 +463,7 @@ useHead({
 
             <!-- PID/HPH -->
             <div class="d-flex align-center ga-1">
-              <div class="text-subtitle-2" id="copy-text">
+              <div class="text-subtitle-2">
                 <b> HPH: 1234567890аж </b>
               </div>
 
@@ -473,7 +475,7 @@ useHead({
                   rounded="circle"
                   variant="text"
                   color=""
-                  @click="copyToClipboard"
+                  @click="copyToClipboard('1234567890аж')"
                   tabindex="0"
                   aria-label="Кликнете, за да копирате в клипборда"
                   v-tooltip:bottom="{
@@ -482,17 +484,6 @@ useHead({
                   }"
                 >
                 </v-btn>
-
-                <!-- Tooltip that appears after copy action -->
-                <v-fade-transition>
-                  <div
-                    v-if="showSmallTooltip"
-                    class="rounded-lg text-caption absolute ml-10 px-2"
-                    style="position: absolute; background-color: #e0e0e0"
-                  >
-                    Копирано
-                  </div>
-                </v-fade-transition>
               </div>
             </div>
 
@@ -753,6 +744,8 @@ useHead({
           >
             <!-- Import Checkbox -->
             <v-checkbox
+              :value="2"
+              v-model="selectedReferences"
               :hide-details="true"
               style="scale: 0.8"
               color="primary"
@@ -766,7 +759,7 @@ useHead({
 
             <!-- PID/HPH -->
             <div class="d-flex align-center ga-1">
-              <div class="text-subtitle-2" id="copy-text">
+              <div class="text-subtitle-2">
                 <b> HPH: 1234567890аж </b>
               </div>
 
@@ -778,7 +771,7 @@ useHead({
                   rounded="circle"
                   variant="text"
                   color=""
-                  @click="copyToClipboard"
+                  @click="copyToClipboard('1234567890аж')"
                   tabindex="0"
                   aria-label="Кликнете, за да копирате в клипборда"
                   v-tooltip:bottom="{
@@ -787,17 +780,6 @@ useHead({
                   }"
                 >
                 </v-btn>
-
-                <!-- Tooltip that appears after copy action -->
-                <v-fade-transition>
-                  <div
-                    v-if="showSmallTooltip"
-                    class="rounded-lg text-caption absolute ml-10 px-2"
-                    style="position: absolute; background-color: #e0e0e0"
-                  >
-                    Копирано
-                  </div>
-                </v-fade-transition>
               </div>
             </div>
 
@@ -1058,6 +1040,8 @@ useHead({
           >
             <!-- Import Checkbox -->
             <v-checkbox
+              :value="3"
+              v-model="selectedReferences"
               :hide-details="true"
               style="scale: 0.8"
               color="primary"
@@ -1071,7 +1055,7 @@ useHead({
 
             <!-- PID/HPH -->
             <div class="d-flex align-center ga-1">
-              <div class="text-subtitle-2" id="copy-text">
+              <div class="text-subtitle-2">
                 <b> HPH: 1234567890аж </b>
               </div>
 
@@ -1083,7 +1067,7 @@ useHead({
                   rounded="circle"
                   variant="text"
                   color=""
-                  @click="copyToClipboard"
+                  @click="copyToClipboard('1234567890аж')"
                   tabindex="0"
                   aria-label="Кликнете, за да копирате в клипборда"
                   v-tooltip:bottom="{
@@ -1092,17 +1076,6 @@ useHead({
                   }"
                 >
                 </v-btn>
-
-                <!-- Tooltip that appears after copy action -->
-                <v-fade-transition>
-                  <div
-                    v-if="showSmallTooltip"
-                    class="rounded-lg text-caption absolute ml-10 px-2"
-                    style="position: absolute; background-color: #e0e0e0"
-                  >
-                    Копирано
-                  </div>
-                </v-fade-transition>
               </div>
             </div>
 
@@ -1358,7 +1331,8 @@ useHead({
 </template>
 
 <style>
-.v-menu > .v-overlay__content > .v-list {
+.v-menu > .v-overlay__content > .v-list,
+.v-menu > .v-overlay__content > .v-sheet {
   background: white !important;
 }
 </style>

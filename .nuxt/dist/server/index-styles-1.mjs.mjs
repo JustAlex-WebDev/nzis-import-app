@@ -1,1 +1,1 @@
-const t=".v-menu>.v-overlay__content>.v-list{background:#fff!important}";export{t as default};
+const t=".v-menu>.v-overlay__content>.v-list,.v-menu>.v-overlay__content>.v-sheet{background:#fff!important}";export{t as default};
