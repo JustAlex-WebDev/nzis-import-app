@@ -11,7 +11,7 @@ import { createHead as createHead$1, propsToString, renderSSRHead } from 'file:/
 import { isVNode, toValue, isRef } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/vue/index.mjs';
 import { walkResolver } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/unhead/dist/utils.mjs';
 import { renderToString } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/vue/server-renderer/index.mjs';
-import { createHooks } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/hookable/dist/index.mjs';
+import { createDebugger, createHooks } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/hookable/dist/index.mjs';
 import { createFetch, Headers as Headers$1 } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/ofetch/dist/node.mjs';
 import { fetchNodeRequestHandler, callNodeRequestHandler } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/node-mock-http/dist/index.mjs';
 import { createStorage, prefixStorage } from 'file:///Users/alexandarvalov/Documents/GitHub/nzis-import-app/node_modules/unstorage/dist/index.mjs';
@@ -1103,9 +1103,18 @@ function onConsoleLog(callback) {
   consola$1.wrapConsole();
 }
 
+function defineNitroPlugin(def) {
+  return def;
+}
+
+const _BtRVo8JIp38QeUR4uA2k_Yk9g7sytmR4qVyoNXFJGek = defineNitroPlugin((nitro) => {
+  createDebugger(nitro.hooks, { tag: "nitro-runtime" });
+});
+
 const plugins = [
   _8kjrwWcIysWNxihmSvzS61ZTePb73Iw2jHjvbJMSiPo,
-_mKQlzeEMe_E96szVVQn_p94iiezghlfDuRi43NVSXM
+_mKQlzeEMe_E96szVVQn_p94iiezghlfDuRi43NVSXM,
+_BtRVo8JIp38QeUR4uA2k_Yk9g7sytmR4qVyoNXFJGek
 ];
 
 const _lazy_RPWNEB = () => Promise.resolve().then(function () { return renderer$1; });

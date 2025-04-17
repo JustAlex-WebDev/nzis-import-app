@@ -7,8 +7,16 @@
     "/_nuxt/*",
     "/favicon.ico",
     "/icon.png",
+    "/manifest.webmanifest",
+    "/sw.js",
+    "/sw.js.map",
+    "/workbox-5ffe50d4.js",
+    "/workbox-5ffe50d4.js.map",
+    "/images/app-logo-144.png",
     "/images/branding-nzis.svg",
     "/images/branding-nzis.svg.br",
-    "/images/branding-nzis.svg.gz"
+    "/images/branding-nzis.svg.gz",
+    "/images/pwa-192x192.png",
+    "/images/pwa-512x512.png"
   ]
 }

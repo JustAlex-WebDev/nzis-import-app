@@ -3,15 +3,16 @@
 // Imports
 //
 import { useDisplay } from "vuetify";
+import { mockReferences, type Reference } from "@/data/references";
 
 //
 // State
 //
 
-// Screen size
+// Screen size utility from Vuetify
 const { smAndDown } = useDisplay();
 
-// Form state
+// Reactive form state
 const form = reactive({
   pid: null as number | null,
   hph: null as string | null,
@@ -19,19 +20,22 @@ const form = reactive({
   saleSchema: null as string | null,
 });
 
-// Identifier Type Switch (true for PID, false for HPH)
+// Boolean switch for identifier type (true = PID, false = HPH)
 const identifierType = ref<boolean>(true);
 
-// Form ref for validation
+// Form reference for validation
 const formRef = ref();
 
-// Loading state
+// Loading state for asynchronous operations
 const isLoading = ref(false);
 
-// Selected references for import
+// References data
+const references = ref<Reference[]>([]);
+
+// Selected references by the user
 const selectedReferences = ref<Array<string | number>>([]);
 
-// Location list items
+// Location options
 const locationItems = [
   "Асеновград",
   "Търново",
@@ -41,23 +45,10 @@ const locationItems = [
   "Хасково",
 ];
 
-// Sale schema list items
+// Sale schema options
 const saleSchemaItems = ["НЗОК - Асеновград", "НЗОК - Пловдив", "НЗОК - София"];
 
-// Examination Table
-const examinationTableItems = [
-  {
-    code: "00-02A",
-    examinationName: "Изследване на витамин D",
-  },
-];
-
-const examinationTableHeaders = [
-  { key: "code", title: "Код", align: "start" as "start" },
-  { key: "examinationName", title: "Изследване", align: "start" as "start" },
-];
-
-// Performer Select
+// Performer select options
 const performerSelectItems = [
   { name: "Д-р Иванов", department: "Кардиология" },
   { name: "Д-р Петрова", department: "Неврология" },
@@ -65,6 +56,15 @@ const performerSelectItems = [
   { name: "Д-р Стефанова", department: "Педиатрия" },
   { name: "Д-р Николов", department: "Офталмология" },
   { name: "Д-р Димитрова", department: "Хирургия" },
+];
+
+// Examination table data
+const examinationTableHeaders = [
+  { key: "code", title: "Код", align: "start" as "start" },
+  { key: "examinationName", title: "Изследване", align: "start" as "start" },
+];
+const examinationTableItems = [
+  { code: "00-02A", examinationName: "Изследване на витамин D" },
 ];
 
 //
@@ -76,95 +76,127 @@ const hasSelectedReferences = computed(
   () => selectedReferences.value.length > 0
 );
 
+// PID/HPH input character counter
+const counter = computed(() => form.pid?.toString().length || 0);
+
 //
 // Methods
 //
 
-// Validation rule for PID
-const pidValidationRule = (v: string) => {
+/**
+ * Validation rule for PID input.
+ */
+const pidValidationRule = (value: string) => {
   const regex = /^\d{10}$/;
-  if (!v) {
+  if (!value) {
     return "ЕГН/ЛНЧ не може да бъде празно";
-  } else if (!regex.test(v)) {
+  } else if (!regex.test(value)) {
     return "ЕГН/ЛНЧ трябва да съдържа точно 10 цифри";
   }
   return true;
 };
 
-// Validation rule for HPH
-const hphValidationRule = (v: string) => {
-  const regex = /^[0-9А-Яа-я]{12}$/; // Ensure exactly 12 characters: numbers or Cyrillic letters
-  if (!v) {
+/**
+ * Validation rule for HPH input.
+ */
+const hphValidationRule = (value: string) => {
+  // Ensure exactly 12 characters: numbers or Cyrillic letters
+  const regex = /^[0-9А-Яа-я]{12}$/;
+
+  if (!value) {
     return "HPH не може да бъде празно";
-  } else if (!regex.test(v)) {
+  } else if (!regex.test(value)) {
     return "HPH трябва да съдържа точно 12 символа (цифри и/или букви на кирилица)";
   }
   return true;
 };
 
-// Validate form fields
-const validateForm = () => {
-  const pidValid = identifierType.value
-    ? pidValidationRule(form.pid?.toString() || "") === true
-    : hphValidationRule(form.hph?.toString() || "") === true;
-
-  if (!pidValid) {
-    console.error("Invalid PID/HPH");
-  }
-
-  return pidValid;
+/**
+ * Format a date string to a localized format.
+ */
+const formatIssuedDate = (dateString: string): string => {
+  const months = [
+    "яну",
+    "фев",
+    "мар",
+    "апр",
+    "май",
+    "юни",
+    "юли",
+    "авг",
+    "сеп",
+    "окт",
+    "ное",
+    "дек",
+  ];
+  const date = new Date(dateString);
+  return `${date.getDate().toString().padStart(2, "0")} ${
+    months[date.getMonth()]
+  } ${date.getFullYear()}г.`;
 };
 
-// Handle form submission
+/**
+ * Validate the form based on the identifier type.
+ */
+const validateForm = () => {
+  const value = identifierType.value
+    ? pidValidationRule(form.pid?.toString() || "")
+    : hphValidationRule(form.hph?.toString() || "");
+  return value === true;
+};
+
+/**
+ * Fetch mock references (simulate an API call).
+ */
+const fetchMockReferences = async (): Promise<Reference[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(mockReferences), 1000);
+  });
+};
+
+// Clear all references
+const clearAllReferences = () => {
+  references.value = [];
+};
+
+// Remove a reference from the list
+const removeReference = (reference: Reference) => {
+  references.value = references.value.filter((ref) => ref !== reference);
+};
+
+/**
+ * Handle form submission.
+ */
 const handleSubmit = async () => {
   if (validateForm()) {
-    // Start loading
     isLoading.value = true;
-
-    // Simulate a 1-second delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    console.log("Form submitted:", {
-      ...form,
-      identifierType: identifierType.value ? "PID" : "HPH",
-    });
-
-    // Stop loading
+    references.value = await fetchMockReferences();
     isLoading.value = false;
+
+    if (references.value.length === 0) {
+      console.log("No references found for the given identifier.");
+    }
   } else {
     console.log("Form validation failed.");
   }
 };
 
 /**
- * Copies the provided text to the clipboard.
- * @param {string} textToCopy - The text to copy to the clipboard.
+ * Copy text to clipboard.
  */
-const copyToClipboard = (textToCopy: string) => {
-  if (!textToCopy) {
-    console.error("No text provided to copy.");
-    alert("Няма текст за копиране.");
-    return;
-  }
-
-  if (!navigator.clipboard?.writeText) {
-    console.error("Clipboard API is not supported in this browser.");
-    alert("Клипбордът не е поддържан в този браузър.");
-    return;
-  }
-
+const copyToClipboard = (text: string) => {
   navigator.clipboard
-    .writeText(textToCopy)
-    .then(() => {
-      alert("Текстът е успешно копиран в клипборда!");
-    })
-    .catch((err) => {
-      console.error("Failed to copy text to clipboard:", err);
-      alert("Неуспешно копиране. Опитайте отново.");
+    .writeText(text)
+    .then(() => console.log("Text copied to clipboard"))
+    .catch((error) => {
+      console.error("Failed to copy text:", error);
+      alert("Unable to copy text.");
     });
 };
 
-// Props for the performer select
+/**
+ * Map performer data to props for a select component.
+ */
 const performerSelectProps = (performer: {
   name: string;
   department: string;
@@ -176,18 +208,7 @@ const performerSelectProps = (performer: {
 };
 
 //
-// Computed
-//
-
-// Computed property for the counter
-const counter = computed(() => {
-  // Convert to string and get length
-  const length = form.pid ? form.pid.toString().length : 0;
-  return length;
-});
-
-//
-// On component mount
+// Lifecycle Hooks
 //
 
 // Set default location to the first item in the list when the component is mounted
@@ -202,20 +223,16 @@ onMounted(() => {
 
 // Set the page's head metadata
 useHead({
-  link: [{ rel: "icon", type: "image/svg+xml", href: "" }],
   title: "НЗИС Import Application",
-  htmlAttrs: {
-    lang: "bg",
-  },
+  htmlAttrs: { lang: "bg" },
   meta: [
     {
       name: "description",
-      content:
-        "НЗИС Import Application е приложение за импортиране на данни за пациенти от Националната здравна информационна система (НЗИС), което позволява лесно извличане на данни и реферали за пациента.",
+      content: "Приложение за импортиране на данни от НЗИС.",
     },
     {
       name: "keywords",
-      content: "НЗИС, пациентски данни, реферали, импортиране, здравеопазване",
+      content: "НЗИС, пациентски данни, реферали, импортиране",
     },
     { name: "author", content: "SKYWARE Group | LIMS iLab" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -306,6 +323,7 @@ useHead({
             text: 'Изчистисване на всички направления',
             openDelay: 700,
           }"
+          @click="clearAllReferences"
         >
           <span class="text-body-2">Изчисти</span>
         </v-btn>
@@ -438,17 +456,29 @@ useHead({
     <v-divider class="my-6"></v-divider>
 
     <!-- References -->
-    <v-row align="stretch" justify="start" class="flex-0-1">
-      <!-- Reference -->
-      <v-col cols="12" sm="6" style="height: fit-content">
+    <v-row
+      v-if="references.length > 0"
+      align="stretch"
+      justify="start"
+      class="flex-0-1"
+    >
+      <!-- Reference Card Section -->
+      <v-col
+        v-for="reference in references"
+        :key="reference.id"
+        cols="12"
+        sm="6"
+        style="height: fit-content"
+      >
+        <!-- Card Container for each reference -->
         <v-card class="bg-white" rounded="lg" flat border>
-          <!-- Title -->
+          <!-- Card Header: Title Section -->
           <v-card-title
             class="d-flex bg-grey-lighten-5 justify-space-between align-center px-2 py-0"
           >
-            <!-- Import Checkbox -->
+            <!-- Checkbox to select the reference -->
             <v-checkbox
-              :value="1"
+              :value="reference.id"
               v-model="selectedReferences"
               :hide-details="true"
               style="scale: 0.8"
@@ -461,13 +491,13 @@ useHead({
               }"
             ></v-checkbox>
 
-            <!-- PID/HPH -->
+            <!-- Section showing HPH (Health Patient ID) -->
             <div class="d-flex align-center ga-1">
               <div class="text-subtitle-2">
-                <b> HPH: 1234567890аж </b>
+                <b> HPH: {{ reference.hph }} </b>
               </div>
 
-              <!-- Copy Button -->
+              <!-- Button to copy HPH to clipboard -->
               <div class="relative d-flex align-center">
                 <v-btn
                   icon="mdi-content-copy"
@@ -475,7 +505,7 @@ useHead({
                   rounded="circle"
                   variant="text"
                   color=""
-                  @click="copyToClipboard('1234567890аж')"
+                  @click="copyToClipboard(reference.hph)"
                   tabindex="0"
                   aria-label="Кликнете, за да копирате в клипборда"
                   v-tooltip:bottom="{
@@ -487,8 +517,9 @@ useHead({
               </div>
             </div>
 
-            <!-- Close Icon -->
+            <!-- Close Button: Allows user to close the reference -->
             <v-btn
+              @click="removeReference(reference)"
               icon="mdi-close"
               color="error"
               size="small"
@@ -501,12 +532,12 @@ useHead({
             ></v-btn>
           </v-card-title>
 
-          <!-- Divider -->
+          <!-- Divider between Header and Card Body -->
           <v-divider></v-divider>
 
-          <!-- Content -->
+          <!-- Card Body: Content Section for each reference -->
           <v-card-text class="px-4 py-2">
-            <!-- Patient -->
+            <!-- Patient Information Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -514,19 +545,19 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Patient Icon -->
                   <v-icon icon="mdi-account-outline" size="small"></v-icon>
 
-                  <!-- Name -->
-                  <b>Велизар Петков Шилев</b>
+                  <!-- Patient's Name -->
+                  <b>{{ reference.patientName }}</b>
 
-                  <!-- PID -->
-                  <div>1944024426</div>
+                  <!-- Patient's PID (Personal Identification Number) -->
+                  <div>{{ reference.patientPid }}</div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Date -->
+            <!-- Date Information Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -534,25 +565,33 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Date Icon -->
                   <v-icon
                     icon="mdi-calendar-month-outline"
                     size="small"
                   ></v-icon>
 
-                  <!-- Date -->
-                  <div>Изд. <b>09 апр 2025г.</b></div>
+                  <!-- Issued Date -->
+                  <div>
+                    Изд. <b>{{ formatIssuedDate(reference.issuedDate) }}</b>
+                  </div>
 
-                  <!-- List -->
-                  <div>(Амб. л-т <b>25099A0000F6</b>)</div>
+                  <!-- Reference List -->
+                  <div>
+                    (Амб. л-т
+                    <b>{{ reference.referenceId }}</b>
+                    )
+                  </div>
 
-                  <!-- Type -->
-                  <div>вид <b>1</b></div>
+                  <!-- Reference Type -->
+                  <div>
+                    вид <b>{{ reference.referenceType }}</b>
+                  </div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Location -->
+            <!-- Location Information Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -560,19 +599,29 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Location Icon -->
                   <v-icon icon="mdi-map-marker-outline" size="small"></v-icon>
 
-                  <!-- Practise Location -->
-                  <div>Пловдив (<b>16</b>)</div>
+                  <!-- Primary Location and Code -->
+                  <div>
+                    {{ reference.primaryLocation }}
+                    (
+                    <b>{{ reference.primaryLocationCode }}</b>
+                    )
+                  </div>
 
-                  <!-- Region -->
-                  <div>Съединение (<b>15</b>)</div>
+                  <!-- Secondary Location and Code -->
+                  <div>
+                    {{ reference.secondaryLocation }}
+                    (
+                    <b>{{ reference.secondaryLocationCode }}</b>
+                    )
+                  </div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Condition -->
+            <!-- Condition Information Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -580,19 +629,19 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Condition Icon -->
                   <v-icon
                     icon="mdi-clipboard-pulse-outline"
                     size="small"
                   ></v-icon>
 
                   <!-- Patient's Condition -->
-                  <div>ZOO</div>
+                  <div>{{ reference.patientStateCode }}</div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Doctor -->
+            <!-- Doctor Information Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -600,19 +649,21 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Doctor Icon -->
                   <v-icon icon="mdi-doctor" size="small"></v-icon>
 
-                  <!-- Doctor's Name -->
-                  <b>Тодор Николов</b>
+                  <!-- Referring Doctor's Name -->
+                  <b>{{ reference.referringDoctor }}</b>
 
                   <!-- Doctor's Identifier -->
-                  <div>УИН: <b>1700003565</b></div>
+                  <div>
+                    УИН: <b>{{ reference.doctorId }}</b>
+                  </div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Specialty -->
+            <!-- Doctor's Specialty Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -620,16 +671,20 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Specialty Icon -->
                   <v-icon icon="mdi-stethoscope" size="small"></v-icon>
 
-                  <!-- Doctor's Specialty -->
-                  <div><b>06</b> (Вътрешни болести)</div>
+                  <!-- Doctor's Specialty Information -->
+                  <div>
+                    <b>{{ reference.conditionCode }}</b> ({{
+                      reference.conditionDescription
+                    }})
+                  </div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Doctor's Practise Location -->
+            <!-- Doctor's Practise Location Section -->
             <v-hover>
               <template #default="{ isHovering, props }">
                 <div
@@ -637,16 +692,18 @@ useHead({
                   class="d-flex flex-wrap align-center ga-2 rounded pa-2"
                   :class="{ 'bg-grey-lighten-5': isHovering }"
                 >
-                  <!-- Icon -->
+                  <!-- Practise Location Icon -->
                   <v-icon icon="mdi-hospital-building" size="small"></v-icon>
 
-                  <!-- Doctor's Practise -->
-                  <div>РЗИ код: <b>1622111277</b></div>
+                  <!-- Regional Health Code -->
+                  <div>
+                    РЗИ код: <b>{{ reference.regionalHealthCode }}</b>
+                  </div>
                 </div>
               </template>
             </v-hover>
 
-            <!-- Examination Table -->
+            <!-- Examination Table Section -->
             <v-data-table
               :headers="examinationTableHeaders"
               :items="examinationTableItems"
@@ -657,7 +714,7 @@ useHead({
               density="compact"
               class="bg-white w-100 border my-2 rounded"
             >
-              <!-- Head Section -->
+              <!-- Table Headers -->
               <template
                 v-for="header in examinationTableHeaders"
                 #[`header.${header.key}`]
@@ -671,8 +728,8 @@ useHead({
                 </div>
               </template>
 
-              <!-- Body Section -->
-              <!-- Code -->
+              <!-- Table Body -->
+              <!-- Displaying Examination Code -->
               <template v-slot:[`item.code`]="{ item }">
                 <div
                   class="d-flex align-center ga-0"
@@ -682,7 +739,7 @@ useHead({
                 </div>
               </template>
 
-              <!-- Examination -->
+              <!-- Displaying Examination Name -->
               <template v-slot:[`item.examinationName`]="{ item }">
                 <div
                   class="d-flex align-center ga-0"
@@ -693,10 +750,13 @@ useHead({
               </template>
             </v-data-table>
 
-            <!-- Select Performer -->
+            <!-- Performer Select Dropdown -->
             <v-select
               :item-props="performerSelectProps"
               :items="performerSelectItems"
+              item-value="name"
+              item-text="name"
+              v-model="reference.executorName"
               prepend-inner-icon="mdi-hospital-box-outline"
               label="Изпълнител на направлението"
               control-variant="hidden"
@@ -710,6 +770,7 @@ useHead({
 
             <!-- Sample Date Input -->
             <v-date-input
+              v-model="reference.materialCollectionDate"
               prepend-icon=""
               prepend-inner-icon="mdi-test-tube"
               label="Дата на материал"
@@ -722,598 +783,7 @@ useHead({
 
             <!-- Result Date Input -->
             <v-date-input
-              prepend-icon=""
-              prepend-inner-icon="mdi-file-document-arrow-right-outline"
-              label="Дата на резултат"
-              variant="outlined"
-              density="compact"
-              rounded="lg"
-              :hide-details="true"
-              class="mt-4"
-            ></v-date-input>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <!-- Reference -->
-      <v-col cols="12" sm="6" style="height: fit-content">
-        <v-card class="bg-white" rounded="lg" flat border>
-          <!-- Title -->
-          <v-card-title
-            class="d-flex bg-grey-lighten-5 justify-space-between align-center px-2 py-0"
-          >
-            <!-- Import Checkbox -->
-            <v-checkbox
-              :value="2"
-              v-model="selectedReferences"
-              :hide-details="true"
-              style="scale: 0.8"
-              color="primary"
-              tabindex="0"
-              aria-label="Селектирайте направлението"
-              v-tooltip:bottom="{
-                text: 'Селектирайте направлението',
-                openDelay: 700,
-              }"
-            ></v-checkbox>
-
-            <!-- PID/HPH -->
-            <div class="d-flex align-center ga-1">
-              <div class="text-subtitle-2">
-                <b> HPH: 1234567890аж </b>
-              </div>
-
-              <!-- Copy Button -->
-              <div class="relative d-flex align-center">
-                <v-btn
-                  icon="mdi-content-copy"
-                  size="x-small"
-                  rounded="circle"
-                  variant="text"
-                  color=""
-                  @click="copyToClipboard('1234567890аж')"
-                  tabindex="0"
-                  aria-label="Кликнете, за да копирате в клипборда"
-                  v-tooltip:bottom="{
-                    text: 'Кликнете, за да копирате в клипборда',
-                    openDelay: 700,
-                  }"
-                >
-                </v-btn>
-              </div>
-            </div>
-
-            <!-- Close Icon -->
-            <v-btn
-              icon="mdi-close"
-              color="error"
-              size="small"
-              variant="text"
-              aria-label="Затворете направлението"
-              v-tooltip:bottom="{
-                text: 'Затворете направлението',
-                openDelay: 700,
-              }"
-            ></v-btn>
-          </v-card-title>
-
-          <!-- Divider -->
-          <v-divider></v-divider>
-
-          <!-- Content -->
-          <v-card-text class="px-4 py-2">
-            <!-- Patient -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-account-outline" size="small"></v-icon>
-
-                  <!-- Name -->
-                  <b>Иван Кирков Милев</b>
-
-                  <!-- PID -->
-                  <div>1234567890</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Date -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon
-                    icon="mdi-calendar-month-outline"
-                    size="small"
-                  ></v-icon>
-
-                  <!-- Date -->
-                  <div>Изд. <b>10 юни 2024г.</b></div>
-
-                  <!-- List -->
-                  <div>(Амб. л-т <b>32519A0000F6</b>)</div>
-
-                  <!-- Type -->
-                  <div>вид <b>2</b></div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Location -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-map-marker-outline" size="small"></v-icon>
-
-                  <!-- Practise Location -->
-                  <div>София (<b>5</b>)</div>
-
-                  <!-- Region -->
-                  <div>Студентски (<b>9</b>)</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Condition -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon
-                    icon="mdi-clipboard-pulse-outline"
-                    size="small"
-                  ></v-icon>
-
-                  <!-- Patient's Condition -->
-                  <div>ZOO</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Doctor -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-doctor" size="small"></v-icon>
-
-                  <!-- Doctor's Name -->
-                  <b>Никола Тодоров</b>
-
-                  <!-- Doctor's Identifier -->
-                  <div>УИН: <b>2300004163</b></div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Specialty -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-stethoscope" size="small"></v-icon>
-
-                  <!-- Doctor's Specialty -->
-                  <div><b>06</b> (Вътрешни болести)</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Doctor's Practise Location -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-hospital-building" size="small"></v-icon>
-
-                  <!-- Doctor's Practise -->
-                  <div>РЗИ код: <b>2321131225</b></div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Examination Table -->
-            <v-data-table
-              :headers="examinationTableHeaders"
-              :items="examinationTableItems"
-              :mobile="smAndDown"
-              :disable-sort="true"
-              :hide-default-header="smAndDown"
-              hide-default-footer
-              density="compact"
-              class="bg-white w-100 border my-2 rounded"
-            >
-              <!-- Head Section -->
-              <template
-                v-for="header in examinationTableHeaders"
-                #[`header.${header.key}`]
-                :key="header.key"
-              >
-                <div
-                  class="d-flex align-center font-weight-bold"
-                  style="text-wrap-mode: nowrap"
-                >
-                  <span>{{ header.title }}</span>
-                </div>
-              </template>
-
-              <!-- Body Section -->
-              <!-- Code -->
-              <template v-slot:[`item.code`]="{ item }">
-                <div
-                  class="d-flex align-center ga-0"
-                  :class="smAndDown ? 'justify-end' : 'justify-start'"
-                >
-                  <span>{{ item.code }}</span>
-                </div>
-              </template>
-
-              <!-- Examination -->
-              <template v-slot:[`item.examinationName`]="{ item }">
-                <div
-                  class="d-flex align-center ga-0"
-                  :class="smAndDown ? 'justify-end' : 'justify-start'"
-                >
-                  <span>{{ item.examinationName }}</span>
-                </div>
-              </template>
-            </v-data-table>
-
-            <!-- Select Performer -->
-            <v-select
-              :item-props="performerSelectProps"
-              :items="performerSelectItems"
-              prepend-inner-icon="mdi-hospital-box-outline"
-              label="Изпълнител на направлението"
-              control-variant="hidden"
-              variant="outlined"
-              placeholder="Изпълнител на направлението"
-              density="compact"
-              :hide-details="true"
-              rounded="lg"
-              class="mt-4"
-            ></v-select>
-
-            <!-- Sample Date Input -->
-            <v-date-input
-              prepend-icon=""
-              prepend-inner-icon="mdi-test-tube"
-              label="Дата на материал"
-              variant="outlined"
-              density="compact"
-              rounded="lg"
-              :hide-details="true"
-              class="mt-4"
-            ></v-date-input>
-
-            <!-- Result Date Input -->
-            <v-date-input
-              prepend-icon=""
-              prepend-inner-icon="mdi-file-document-arrow-right-outline"
-              label="Дата на резултат"
-              variant="outlined"
-              density="compact"
-              rounded="lg"
-              :hide-details="true"
-              class="mt-4"
-            ></v-date-input>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <!-- Reference -->
-      <v-col cols="12" sm="6" style="height: fit-content">
-        <v-card class="bg-white" rounded="lg" flat border>
-          <!-- Title -->
-          <v-card-title
-            class="d-flex bg-grey-lighten-5 justify-space-between align-center px-2 py-0"
-          >
-            <!-- Import Checkbox -->
-            <v-checkbox
-              :value="3"
-              v-model="selectedReferences"
-              :hide-details="true"
-              style="scale: 0.8"
-              color="primary"
-              tabindex="0"
-              aria-label="Селектирайте направлението"
-              v-tooltip:bottom="{
-                text: 'Селектирайте направлението',
-                openDelay: 700,
-              }"
-            ></v-checkbox>
-
-            <!-- PID/HPH -->
-            <div class="d-flex align-center ga-1">
-              <div class="text-subtitle-2">
-                <b> HPH: 1234567890аж </b>
-              </div>
-
-              <!-- Copy Button -->
-              <div class="relative d-flex align-center">
-                <v-btn
-                  icon="mdi-content-copy"
-                  size="x-small"
-                  rounded="circle"
-                  variant="text"
-                  color=""
-                  @click="copyToClipboard('1234567890аж')"
-                  tabindex="0"
-                  aria-label="Кликнете, за да копирате в клипборда"
-                  v-tooltip:bottom="{
-                    text: 'Кликнете, за да копирате в клипборда',
-                    openDelay: 700,
-                  }"
-                >
-                </v-btn>
-              </div>
-            </div>
-
-            <!-- Close Icon -->
-            <v-btn
-              icon="mdi-close"
-              color="error"
-              size="small"
-              variant="text"
-              aria-label="Затворете направлението"
-              v-tooltip:bottom="{
-                text: 'Затворете направлението',
-                openDelay: 700,
-              }"
-            ></v-btn>
-          </v-card-title>
-
-          <!-- Divider -->
-          <v-divider></v-divider>
-
-          <!-- Content -->
-          <v-card-text class="px-4 py-2">
-            <!-- Patient -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-account-outline" size="small"></v-icon>
-
-                  <!-- Name -->
-                  <b>Велизар Петков Шилев</b>
-
-                  <!-- PID -->
-                  <div>1944024426</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Date -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon
-                    icon="mdi-calendar-month-outline"
-                    size="small"
-                  ></v-icon>
-
-                  <!-- Date -->
-                  <div>Изд. <b>09 апр 2025г.</b></div>
-
-                  <!-- List -->
-                  <div>(Амб. л-т <b>25099A0000F6</b>)</div>
-
-                  <!-- Type -->
-                  <div>вид <b>1</b></div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Location -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-map-marker-outline" size="small"></v-icon>
-
-                  <!-- Practise Location -->
-                  <div>Пловдив (<b>16</b>)</div>
-
-                  <!-- Region -->
-                  <div>Съединение (<b>15</b>)</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Condition -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon
-                    icon="mdi-clipboard-pulse-outline"
-                    size="small"
-                  ></v-icon>
-
-                  <!-- Patient's Condition -->
-                  <div>ZOO</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Doctor -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-doctor" size="small"></v-icon>
-
-                  <!-- Doctor's Name -->
-                  <b>Тодор Николов</b>
-
-                  <!-- Doctor's Identifier -->
-                  <div>УИН: <b>1700003565</b></div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Specialty -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-stethoscope" size="small"></v-icon>
-
-                  <!-- Doctor's Specialty -->
-                  <div><b>06</b> (Вътрешни болести)</div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Doctor's Practise Location -->
-            <v-hover>
-              <template #default="{ isHovering, props }">
-                <div
-                  v-bind="props"
-                  class="d-flex flex-wrap align-center ga-2 rounded pa-2"
-                  :class="{ 'bg-grey-lighten-5': isHovering }"
-                >
-                  <!-- Icon -->
-                  <v-icon icon="mdi-hospital-building" size="small"></v-icon>
-
-                  <!-- Doctor's Practise -->
-                  <div>РЗИ код: <b>1622111277</b></div>
-                </div>
-              </template>
-            </v-hover>
-
-            <!-- Examination Table -->
-            <v-data-table
-              :headers="examinationTableHeaders"
-              :items="examinationTableItems"
-              :mobile="smAndDown"
-              :disable-sort="true"
-              :hide-default-header="smAndDown"
-              hide-default-footer
-              density="compact"
-              class="bg-white w-100 border my-2 rounded"
-            >
-              <!-- Head Section -->
-              <template
-                v-for="header in examinationTableHeaders"
-                #[`header.${header.key}`]
-                :key="header.key"
-              >
-                <div
-                  class="d-flex align-center font-weight-bold"
-                  style="text-wrap-mode: nowrap"
-                >
-                  <span>{{ header.title }}</span>
-                </div>
-              </template>
-
-              <!-- Body Section -->
-              <!-- Code -->
-              <template v-slot:[`item.code`]="{ item }">
-                <div
-                  class="d-flex align-center ga-0"
-                  :class="smAndDown ? 'justify-end' : 'justify-start'"
-                >
-                  <span>{{ item.code }}</span>
-                </div>
-              </template>
-
-              <!-- Examination -->
-              <template v-slot:[`item.examinationName`]="{ item }">
-                <div
-                  class="d-flex align-center ga-0"
-                  :class="smAndDown ? 'justify-end' : 'justify-start'"
-                >
-                  <span>{{ item.examinationName }}</span>
-                </div>
-              </template>
-            </v-data-table>
-
-            <!-- Select Performer -->
-            <v-select
-              :item-props="performerSelectProps"
-              :items="performerSelectItems"
-              prepend-inner-icon="mdi-hospital-box-outline"
-              label="Изпълнител на направлението"
-              control-variant="hidden"
-              variant="outlined"
-              placeholder="Изпълнител на направлението"
-              density="compact"
-              :hide-details="true"
-              rounded="lg"
-              class="mt-4"
-            ></v-select>
-
-            <!-- Sample Date Input -->
-            <v-date-input
-              prepend-icon=""
-              prepend-inner-icon="mdi-test-tube"
-              label="Дата на материал"
-              variant="outlined"
-              density="compact"
-              rounded="lg"
-              :hide-details="true"
-              class="mt-4"
-            ></v-date-input>
-
-            <!-- Result Date Input -->
-            <v-date-input
+              v-model="reference.resultDate"
               prepend-icon=""
               prepend-inner-icon="mdi-file-document-arrow-right-outline"
               label="Дата на резултат"

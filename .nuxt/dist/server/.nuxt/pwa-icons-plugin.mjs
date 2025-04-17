@@ -1,0 +1,1 @@
+import{defineNuxtPlugin as a}from"../node_modules/nuxt/dist/app/nuxt.mjs";const p=a((()=>({provide:{pwaIcons:{transparent:{},maskable:{},favicon:{},apple:{},appleSplashScreen:{}}}})));export{p as default};
